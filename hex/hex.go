@@ -37,9 +37,6 @@ func main() {
 		img.Set(int(real(current)), int(imag(current)), color.White)
 	}
 
-	for _, vertex := range vertices {
-		img.Set(int(real(vertex)), int(imag(vertex)), color.White)
-	}
 	fmt.Println("Saving image")
 	saveImage("SerpinskiHexagon.png", img)
 }
