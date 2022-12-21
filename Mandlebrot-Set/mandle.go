@@ -9,15 +9,17 @@ import (
 	"math"
 	"math/cmplx"
 	"os"
+	"sync"
 	"time"
 )
 
 const (
-	startpoint  = complex(-.7, .7)
-	endx        = -.3
-	imageWidth  = 6000
-	imageHeight = 4000
-	iterations  = 512
+	startpoint   = complex(-2, 1)
+	endpointreal = 1
+	imageWidth   = 6000
+	imageHeight  = 4000
+	iterations   = 512
+	cpus         = 8
 )
 
 var (
@@ -27,7 +29,16 @@ var (
 func main() {
 	img := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
 	start := time.Now()
-	renderImage(img, startpoint, endx)
+	wg := sync.WaitGroup{}
+	wg.Add(cpus)
+	for cpu := 0; cpu < cpus; cpu++ {
+		assignedCPU := cpu
+		go func() {
+			renderPerCPU(cpus, assignedCPU, img, startpoint, endpointreal)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 	end := time.Now()
 	fmt.Printf("Calculations done in %v seconds, Saving image", end.Sub(start).Seconds())
 	saveImage("mandleset.png", img)
@@ -44,23 +55,45 @@ func mandlebrot(coordinate complex128, limit int) int {
 	return limit
 }
 
-func renderImage(img *image.RGBA, startpoint complex128, endx float64) {
+// render a portion of the image according to the CPU assigned
+func renderPerCPU(cpuCount int, assignedCpu int, img *image.RGBA, startcoord complex128, endX float64) {
+	subHeight := img.Bounds().Dy() / cpuCount
+	subY := subHeight * assignedCpu
+	pixelsize := getPixelSize(img, startcoord, endX)
+	substartpoint := pixelCoordToMandelCoord(0, subY, pixelsize, startcoord)
+	subRectangle := image.Rect(0, subY, img.Bounds().Dx(), subY+subHeight)
+	subImg := img.SubImage(subRectangle).(*image.RGBA)
+	renderImage(subImg, substartpoint, endX)
+}
+
+func renderImage(img *image.RGBA, startcoord complex128, endx float64) {
 	width := img.Bounds().Dx()
 	height := img.Bounds().Dy()
-	realx := endx - real(startpoint)
-	xdiff := math.Abs(realx)
-	pixelsize := xdiff / float64(width)
+	pixelsize := getPixelSize(img, startcoord, endx)
+	fmt.Printf("Calculating segment width: %d, height %d, at %v\n", width, height, startcoord)
+	minpoint := img.Bounds().Min
 
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
-			tempr := real(startpoint) + float64(x)*pixelsize
-			tempi := imag(startpoint) - float64(y)*pixelsize
-			coord := complex(tempr, tempi)
+	for y := 0; y <= height; y++ {
+		for x := 0; x <= width; x++ {
+			coord := pixelCoordToMandelCoord(x, y, pixelsize, startcoord)
 			i := mandlebrot(coord, iterations)
 			shade := iter2Palette(i)
-			img.Set(x, y, shade)
+			currentPoint := minpoint.Add(image.Point{X: x, Y: y})
+			img.Set(currentPoint.X, currentPoint.Y, shade)
 		}
 	}
+}
+
+func getPixelSize(img image.Image, startpoint complex128, endx float64) float64 {
+	realx := endx - real(startpoint)
+	xdiff := math.Abs(realx)
+	return xdiff / float64(img.Bounds().Dx())
+}
+
+func pixelCoordToMandelCoord(x, y int, pixelsize float64, startpoint complex128) complex128 {
+	tempr := real(startpoint) + float64(x)*pixelsize
+	tempi := imag(startpoint) - float64(y)*pixelsize
+	return complex(tempr, tempi)
 }
 
 func iter2Green(i int) color.RGBA {
