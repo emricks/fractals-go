@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gonum.org/v1/plot/palette"
 	"image"
 	"image/color"
 	"image/png"
@@ -14,8 +15,13 @@ import (
 const (
 	startpoint  = complex(-.7, .7)
 	endx        = -.3
-	imageWidth  = 12000
-	imageHeight = 8000
+	imageWidth  = 6000
+	imageHeight = 4000
+	iterations  = 512
+)
+
+var (
+	colors = palette.Rainbow(iterations+1, palette.Blue, palette.Red, .5, .5, 1)
 )
 
 func main() {
@@ -50,11 +56,19 @@ func renderImage(img *image.RGBA, startpoint complex128, endx float64) {
 			tempr := real(startpoint) + float64(x)*pixelsize
 			tempi := imag(startpoint) - float64(y)*pixelsize
 			coord := complex(tempr, tempi)
-			i := 255 - mandlebrot(coord, 255)
-			shade := color.RGBA{uint8(i), uint8(i), uint8(i), 255}
+			i := mandlebrot(coord, iterations)
+			shade := iter2Palette(i)
 			img.Set(x, y, shade)
 		}
 	}
+}
+
+func iter2Green(i int) color.RGBA {
+	return color.RGBA{R: uint8(i) / 100, G: uint8(i), B: uint8(i) / 100, A: 255}
+}
+
+func iter2Palette(i int) color.Color {
+	return colors.Colors()[i]
 }
 
 func saveImage(fileName string, img image.Image) {
