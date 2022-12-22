@@ -1,1 +1,2 @@
-# fractals-go contains fractal examples written in Go.
+# fractals-go 
+Contains fractal examples written in Go.
