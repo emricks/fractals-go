@@ -16,14 +16,16 @@ import (
 const (
 	startpoint   = complex(-2, 1)
 	endpointreal = 1
-	imageWidth   = 6000
-	imageHeight  = 4000
-	iterations   = 512
-	cpus         = 8
+	//startpoint   = complex(-.4, .665)
+	//endpointreal = -.3
+	imageWidth  = 15000
+	imageHeight = 10000
+	iterations  = 1024
+	cpus        = 10
 )
 
 var (
-	colors = palette.Rainbow(iterations+1, palette.Blue, palette.Red, .5, .5, 1)
+	colors = palette.Rainbow(iterations+1, palette.Blue, palette.Red, .7, .7, 1)
 )
 
 func main() {
