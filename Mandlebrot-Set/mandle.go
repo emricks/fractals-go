@@ -18,14 +18,17 @@ const (
 	endpointreal = 1
 	//startpoint   = complex(-.4, .665)
 	//endpointreal = -.3
-	imageWidth  = 15000
-	imageHeight = 10000
+	imageWidth  = 6000
+	imageHeight = 4000
 	iterations  = 1024
 	cpus        = 10
 )
 
 var (
-	colors = palette.Rainbow(iterations+1, palette.Blue, palette.Red, .7, .7, 1)
+	colors = palette.Rainbow(iterations+1, palette.Hue(.6), palette.Hue(0), .7, .7, 1)
+	//colors = palette.Heat(iterations+1, .5)
+	//colors = palette.Radial(iterations+1, palette.Blue, palette.Red, .7)
+	//colors = palette.Rainbow(iterations+1, palette.Hue(0.7), palette.Hue(0), .7, .7, 1)
 )
 
 func main() {
