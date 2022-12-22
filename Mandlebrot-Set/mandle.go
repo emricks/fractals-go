@@ -18,10 +18,10 @@ const (
 	endpointreal = 1
 	//startpoint   = complex(-.4, .665)
 	//endpointreal = -.3
-	imageWidth  = 6000
-	imageHeight = 4000
+	imageWidth  = 12000
+	imageHeight = 8000
 	iterations  = 1024
-	cpus        = 10
+	cpus        = 20
 )
 
 var (
