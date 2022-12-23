@@ -1,4 +1,4 @@
-module SerpTri
+module fractals-go
 
 go 1.19
 
